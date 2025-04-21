@@ -1,4 +1,6 @@
 # DL-Traff-NeuralODE: Dynamic Traffic Prediction using STGCN + Neural ODEs
+by Jai abhishek singh and Karthik kuppala
+The Pennsylvania state University 
 
 This project extends the **DL-Traff-Graph** benchmark by injecting **Neural Ordinary Differential Equations (Neural ODEs)** into the **STGCN** model for dynamic adjacency matrix learning, enabling better modeling of evolving urban traffic patterns.
 
