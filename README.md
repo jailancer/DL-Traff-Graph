@@ -1,104 +1,121 @@
 # DL-Traff-NeuralODE: Dynamic Traffic Prediction using STGCN + Neural ODEs
 
-This project extends the baseline DL-Traff framework by introducing Neural Ordinary Differential Equations (Neural ODEs) to dynamically evolve the adjacency matrix in traffic prediction tasks. We apply the model on the METR-LA dataset.
+This project extends the **DL-Traff-Graph** benchmark by injecting **Neural Ordinary Differential Equations (Neural ODEs)** into the **STGCN** model for dynamic adjacency matrix learning, enabling better modeling of evolving urban traffic patterns.
 
----
-## 📋 Project Structure
-```
-DL-Traff-Graph/
-├── METRLA/
-│   ├── metr-la.h5
-│   ├── adj_mx.pkl
-├── workMETRLA/
-│   ├── STGCN_NODE.py        # Modified STGCN model using Neural ODE adjacency
-│   ├── ODEFunc.py           # ODE Function to evolve adjacency matrix
-│   ├── Param.py             # Parameters (e.g., N_NODE, TIMESTEP_IN, etc.)
-├── results/                 # Output folder (loss plots, predictions, metrics)
-├── Parent paper EDA.ipynb    # Exploratory Data Analysis on original paper 
-├── README.md
-├── requirements.txt
-└── LICENSE
-```
+# 📂 Project Structure
+
+| Folder/File | Description |
+|:---|:---|
+| `workMETRLA/STGCN_NODE.py` | **Modified STGCN model** that accepts dynamically evolved graphs (Neural ODE version). |
+| `workMETRLA/ODEFunc.py` | Defines the Neural ODE function that evolves the adjacency matrix. |
+| `workMETRLA/Training_STGCN_NODE.ipynb` | **Training notebook**: Loads data, applies Neural ODE evolution, trains the STGCN-Node model. |
+| `workMETRLA/METR-LA/` | **Dataset folder** containing `metr-la.h5` and adjacency matrix CSV. |
+| `workMETRLA/utils/` | Helper scripts, metrics computation functions, etc. |
+| `requirements.txt` | List of packages required. |
 
 ---
 
-## 🛠 Setup Instructions
+# ⚙️ Requirements
 
-1. Clone the repository:
+First, lets create a virtual environment (optional but recommended):
+
 ```bash
-git clone https://github.com/yourusername/DL-Traff-Graph.git
-cd DL-Traff-Graph
+python3 -m venv venv
+source venv/bin/activate  # On Mac/Linux
+venv\Scripts\activate.bat # On Windows
 ```
 
-2. Install all required packages:
+- install the dependencies:
+
 ```bash
 pip install -r requirements.txt
 ```
 
-Required libraries:
-- `torch`
-- `torchdiffeq`
-- `numpy`
-- `pandas`
-- `scipy`
-- `matplotlib`
-- `h5py`
-- `tqdm`
-
-3. **Preprocessing**
-
-The METRLA data (`metr-la.h5` and `adj_mx.pkl`) are already provided inside the `METRLA/` folder.  
-No additional preprocessing steps are needed manually.
-
-4. **Training**
-
-Open the notebook `Parent paper EDA.ipynb` and follow the sections.
-
-Or alternatively:
-
-- Run `modifiedcode.ipynb` 
-- Load dataset
-- Train the model using:
-
-```python
-from workMETRLA.STGCN_NODE import STGCN
-from workMETRLA.ODEFunc import ODEFunc
+**requirements.txt**
+```txt
+torch>=1.10
+torchdiffeq
+numpy
+pandas
+matplotlib
+scikit-learn
+h5py
+scipy
 ```
 
-Modify the training loop if needed.
+---
+
+# 📥 Dataset
+
+Download the **METR-LA traffic dataset** from [here](https://github.com/liyaguang/DCRNN/tree/master/data)  
+and place the following files into:
+
+```
+workMETRLA/METR-LA/
+├── adj_mx.csv
+├── metr-la.h5
+```
 
 ---
 
-## 📈 Results
+# 🚀 How to Run
 
-During training:
-- Loss is plotted (loss vs epochs)
-- Metrics are computed: MAE, RMSE, MAPE
-- Prediction vs Ground Truth plots are saved under `/results`
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/jailancer/DL-Traff-Graph
+   cd DL-Traff-Graph
+   ```
 
-Example Metrics:
+2. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-| Metric | Value |
-|:------|:------|
-| MAE   | ~0.2709 |
-| RMSE  | ~0.5098 |
-| MAPE  | ~185%  |
+3. **Run training**:
+
+   ```bash
+   workMETRLA/Training_STGCN_NODE.ipynb
+   ```
+   - This notebook will:
+     - Load METR-LA dataset
+     - Preprocess features
+     - Initialize and evolve adjacency matrix via Neural ODE
+     - Train the modified STGCN model
+     - Save the model metrics (MAE, RMSE, MAPE) to `STGCN_NODE_metrics.txt`
+     - Plot the training loss curve
+
+5. **Evaluate**:
+   - After training finishes (20 epochs), the model automatically computes evaluation metrics (MAE, RMSE, MAPE) and saves them.
+   - Visualizes prediction vs ground-truth plots for specific sensors.
 
 ---
 
-## ⚠️ Common Errors and Solutions
-| Error | Reason | Solution |
-|:---|:---|:---|
-| `ModuleNotFoundError: No module named 'torchdiffeq'` | Neural ODE library missing | `pip install torchdiffeq` |
-| `shape mismatch when flattening A_init` | Wrong reshape during ODE evolution | Flatten before evolving, reshape after |
-| `forward() takes 2 positional arguments but 3 were given` | Not updating forward methods in STGCN properly | Pass dynamic A only to spatio conv layers, not output layer |
-| `FileNotFoundError: ./METRLA/adj_mx.pkl` | Dataset not in right folder | Make sure `/METRLA` contains `adj_mx.pkl` and `metr-la.h5` |
+# 📊 Results
+
+| Metric | Score |
+|:---|:---|
+| MAE | ~0.244 |
+| RMSE | ~0.495 |
+| MAPE | ~184% |
+
+(Results depend slightly on random seeds.)
 
 ---
 
-## 🤝 Acknowledgments
-This project is based on [DL-Traff: Survey and Benchmark of Deep Learning Models for Urban Traffic Prediction](https://arxiv.org/abs/2108.09091).
+# ⚠️ Important Notes
 
-Developed as part of DS340W Research Paper.
+- Always **evolve adjacency once per epoch**, not every batch.
+- Neural ODE evolution is relatively heavy — training takes ~40–60 minutes depending on GPU/CPU.
+- Make sure the folder structure is **preserved exactly** before running.
 
+---
+
+# 🙌 Contact
+
+If you encounter any issue or have questions regarding the implementation:
+
+- Email : jaiabhishek2060@gmail.com
+- GitHub Profile: https://github.com/jailancer
+
+---
 
